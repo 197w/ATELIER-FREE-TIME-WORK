@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Atelier Forma — Design & Architecture Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cream:   #f4efe6;
+  --cream2:  #ede6d8;
+  --sand:    #d9cfc0;
+  --terracotta: #b85c38;
+  --terra-light: #e8836a;
+  --brown:   #4a3728;
+  --brown-mid: #7a5c48;
+  --brown-lt: #a88870;
+  --ink:     #1e1610;
+  --white:   #faf8f4;
+  --rule:    rgba(74,55,40,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--cream2); }
+::-webkit-scrollbar-thumb { background: var(--terracotta); }
+
+/* ─── LOADER ─── */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.8s ease 0.4s, visibility 0.8s ease 0.4s;
+}
+#loader.done { opacity: 0; visibility: hidden; }
+.loader-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 6vw, 5rem);
+  color: var(--cream);
+  letter-spacing: 0.25em;
+  overflow: hidden;
+}
+.loader-text span {
+  display: inline-block;
+  animation: loaderReveal 1s cubic-bezier(0.77,0,0.175,1) forwards;
+  opacity: 0;
+  transform: translateY(100%);
+}
+.loader-text span:nth-child(2) { animation-delay: 0.08s; }
+.loader-text span:nth-child(3) { animation-delay: 0.16s; }
+.loader-text span:nth-child(4) { animation-delay: 0.24s; }
+.loader-text span:nth-child(5) { animation-delay: 0.32s; }
+.loader-text span:nth-child(6) { animation-delay: 0.4s; }
+.loader-text span:nth-child(7) { animation-delay: 0.48s; }
+@keyframes loaderReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── CURSOR ─── */
+#cur {
+  position: fixed; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--terracotta);
+  pointer-events: none; z-index: 8000;
+  transform: translate(-50%,-50%);
+  transition: width 0.25s, height 0.25s, background 0.25s, opacity 0.25s;
+  mix-blend-mode: multiply;
+}
+#cur.big { width: 56px; height: 56px; background: var(--terracotta); opacity: 0.18; }
+#cur-ring {
+  position: fixed; width: 36px; height: 36px;
+  border: 1px solid var(--terracotta);
+  border-radius: 50%;
+  pointer-events: none; z-index: 7999;
+  transform: translate(-50%,-50%);
+  transition: width 0.4s, height 0.4s, opacity 0.3s;
+  opacity: 0.45;
+}
+#cur-ring.big { width: 0; height: 0; opacity: 0; }
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; inset: 0 0 auto 0;
+  z-index: 500;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 2rem 3.5rem;
+  mix-blend-mode: multiply;
+}
+.nav-left {
+  display: flex; gap: 2.5rem; align-items: center;
+}
+.nav-left a, .nav-right a {
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brown-mid);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-left a:hover, .nav-right a:hover { color: var(--terracotta); }
+.nav-logo {
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+.nav-logo em { font-style: italic; color: var(--terracotta); }
+.nav-right {
+  display: flex; gap: 2.5rem; align-items: center; justify-content: flex-end;
+}
+.nav-contact {
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--terracotta) !important;
+  border-bottom: 1px solid var(--terracotta);
+  padding-bottom: 1px;
+}
+
+/* ─── HERO ─── */
+#hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 0 3.5rem 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg-text {
+  position: absolute;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28vw;
+  font-weight: 300;
+  color: var(--cream2);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  user-select: none;
+}
+.hero-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 10rem;
+  position: relative;
+}
+.hero-rule {
+  width: 1px;
+  height: 60px;
+  background: var(--terracotta);
+  margin: 0 auto 2.5rem;
+  opacity: 0;
+  animation: fadeIn 1s 1s forwards;
+}
+.hero-eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--brown-lt);
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeIn 0.8s 1.2s forwards;
+}
+.hero-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.5rem, 8vw, 7.5rem);
+  font-weight: 300;
+  line-height: 1.0;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: slideUp 1s cubic-bezier(0.22,1,0.36,1) 1.4s forwards;
+}
+.hero-headline em {
+  font-style: italic;
+  color: var(--terracotta);
+}
+.hero-sub {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--brown-mid);
+  line-height: 1.8;
+  max-width: 380px;
+  margin: 0 auto 3rem;
+  opacity: 0;
+  animation: fadeIn 0.8s 1.8s forwards;
+}
+.hero-cta {
+  display: inline-flex; align-items: center; gap: 1rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  text-decoration: none;
+  opacity: 0;
+  animation: fadeIn 0.8s 2.1s forwards;
+  transition: gap 0.3s;
+}
+.hero-cta:hover { gap: 1.5rem; }
+.hero-cta::after {
+  content: '';
+  display: inline-block;
+  width: 40px; height: 1px;
+  background: var(--terracotta);
+  transition: width 0.3s;
+}
+.hero-cta:hover::after { width: 60px; }
+.hero-bottom {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--rule);
+  padding-top: 2rem;
+  opacity: 0;
+  animation: fadeIn 0.8s 2.4s forwards;
+}
+.hero-bottom-item {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  padding: 0 2rem;
+  border-right: 1px solid var(--rule);
+}
+.hero-bottom-item:first-child { padding-left: 0; }
+.hero-bottom-item:last-child { border-right: none; }
+.hb-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brown-lt);
+}
+.hb-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+/* ─── SHARED SECTION STYLES ─── */
+.section-wrap { padding: 7rem 3.5rem; }
+.section-meta {
+  display: flex; align-items: center; gap: 1.5rem;
+  margin-bottom: 5rem;
+}
+.section-meta::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+.meta-num {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--terracotta);
+}
+.meta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--brown-mid);
+}
+
+/* ─── SERVICES ─── */
+#services { background: var(--white); }
+.services-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 5rem;
+  align-items: start;
+}
+.services-intro {}
+.services-intro h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 4vw, 3.8rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}
+.services-intro h2 em { font-style: italic; color: var(--terracotta); }
+.services-intro p {
+  font-size: 0.8rem;
+  line-height: 1.9;
+  color: var(--brown-mid);
+  margin-bottom: 2rem;
+}
+.btn-terra {
+  display: inline-flex; align-items: center; gap: 0.75rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--terracotta);
+  padding: 0.85rem 1.75rem;
+  text-decoration: none;
+  transition: background 0.25s;
+}
+.btn-terra:hover { background: var(--brown); }
+.services-list {}
+.service-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  align-items: start;
+  gap: 1.5rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: default;
+  transition: background 0.2s;
+}
+.service-row:first-child { border-top: 1px solid var(--rule); }
+.service-row:hover { padding-left: 0.5rem; }
+.srv-idx {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--brown-lt);
+  padding-top: 4px;
+}
+.srv-body {}
+.srv-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+.srv-desc {
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--brown-mid);
+}
+.srv-arrow {
+  font-size: 1rem;
+  color: var(--sand);
+  transition: color 0.2s, transform 0.2s;
+  padding-top: 4px;
+}
+.service-row:hover .srv-arrow { color: var(--terracotta); transform: translateX(4px); }
+
+/* ─── WORK ─── */
+#work { background: var(--cream); }
+.work-intro {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 3.5rem;
+}
+.work-intro h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.8rem, 5vw, 5rem);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--ink);
+}
+.work-intro h2 em { font-style: italic; color: var(--terracotta); }
+.work-intro p {
+  max-width: 280px;
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: var(--brown-mid);
+  text-align: right;
+}
+.projects-list {}
+.proj-item {
+  display: grid;
+  grid-template-columns: 3rem 1fr 18rem 10rem;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  position: relative;
+  transition: padding-left 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.proj-item:first-child { border-top: 1px solid var(--rule); }
+.proj-item:hover { padding-left: 0.75rem; }
+.proj-num {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--brown-lt);
+}
+.proj-info {}
+.proj-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  font-weight: 300;
+  color: var(--ink);
+  transition: color 0.2s;
+}
+.proj-item:hover .proj-name { color: var(--terracotta); }
+.proj-sub {
+  font-size: 0.7rem;
+  color: var(--brown-lt);
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+}
+.proj-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.proj-tag {
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid var(--sand);
+  color: var(--brown-mid);
+}
+.proj-year {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--sand);
+  text-align: right;
+  transition: color 0.2s;
+}
+.proj-item:hover .proj-year { color: var(--terracotta); }
+/* Hover image preview */
+.proj-preview {
+  position: fixed;
+  width: 280px; height: 190px;
+  pointer-events: none;
+  z-index: 300;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.3s, transform 0.3s;
+  overflow: hidden;
+}
+.proj-preview.show { opacity: 1; transform: scale(1); }
+.preview-inner {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.18);
+}
+.pi-1 { background: linear-gradient(135deg,#2d1f14,#4a2e1a); color: rgba(232,131,106,0.25); }
+.pi-2 { background: linear-gradient(135deg,#1a1f2d,#0d1520); color: rgba(200,220,255,0.15); }
+.pi-3 { background: linear-gradient(135deg,#1f2d1a,#0f2008); color: rgba(150,220,100,0.15); }
+.pi-4 { background: linear-gradient(135deg,#2d2a14,#2a2005); color: rgba(255,210,80,0.15); }
+.pi-5 { background: linear-gradient(135deg,#2d141f,#200a10); color: rgba(255,130,160,0.15); }
+
+/* ─── MARQUEE ─── */
+.marquee-wrap {
+  background: var(--terracotta);
+  overflow: hidden;
+  padding: 1.25rem 0;
+}
+.marquee-track {
+  display: flex; white-space: nowrap;
+  animation: marquee 18s linear infinite;
+  width: max-content;
+}
+.marquee-item {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: rgba(250,248,244,0.6);
+  padding: 0 3rem;
+  letter-spacing: 0.05em;
+}
+.marquee-dot { color: var(--cream); opacity: 0.4; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── ABOUT ─── */
+#about { background: var(--ink); padding: 7rem 3.5rem; }
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+}
+.about-left {}
+.about-overline {
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 2rem;
+}
+.about-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.8rem, 4.5vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--cream);
+  margin-bottom: 2.5rem;
+}
+.about-headline em {
+  font-style: italic;
+  color: var(--terra-light);
+}
+.about-body {
+  font-size: 0.8rem;
+  line-height: 1.9;
+  color: var(--brown-lt);
+  margin-bottom: 2.5rem;
+}
+.about-right {}
+.about-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid rgba(245,242,235,0.08);
+}
+.metric-cell {
+  padding: 2.5rem;
+  border-right: 1px solid rgba(245,242,235,0.08);
+  border-bottom: 1px solid rgba(245,242,235,0.08);
+}
+.metric-cell:nth-child(2n) { border-right: none; }
+.metric-cell:nth-child(3), .metric-cell:nth-child(4) { border-bottom: none; }
+.metric-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: var(--cream);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.metric-num sup { font-size: 1.5rem; color: var(--terracotta); vertical-align: super; }
+.metric-lbl {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brown-lt);
+}
+.team-row {
+  display: flex; gap: 1rem; margin-top: 2.5rem;
+}
+.team-face {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  border: 1px solid rgba(245,242,235,0.15);
+}
+.tf1 { background: rgba(184,92,56,0.2); color: var(--terra-light); }
+.tf2 { background: rgba(184,92,56,0.12); color: var(--terra-light); }
+.tf3 { background: rgba(184,92,56,0.07); color: var(--terra-light); }
+.team-more {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px dashed rgba(245,242,235,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem;
+  color: var(--brown-lt);
+  letter-spacing: 0.1em;
+}
+
+/* ─── SELECTED WORK GRID ─── */
+#featured { background: var(--cream2); padding: 7rem 3.5rem; }
+.featured-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 3.5rem;
+}
+.featured-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 300;
+  color: var(--ink);
+}
+.featured-header h2 em { font-style: italic; color: var(--terracotta); }
+.all-link {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  text-decoration: none;
+  border-bottom: 1px solid var(--terracotta);
+  padding-bottom: 1px;
+}
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: 320px 280px;
+  gap: 1.25rem;
+}
+.feat-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.feat-card:nth-child(1) { grid-column: span 7; grid-row: 1; }
+.feat-card:nth-child(2) { grid-column: span 5; grid-row: 1; }
+.feat-card:nth-child(3) { grid-column: span 4; grid-row: 2; }
+.feat-card:nth-child(4) { grid-column: span 4; grid-row: 2; }
+.feat-card:nth-child(5) { grid-column: span 4; grid-row: 2; }
+.feat-bg {
+  width: 100%; height: 100%;
+  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-style: italic;
+  font-weight: 300;
+}
+.feat-card:hover .feat-bg { transform: scale(1.04); }
+.fb1 { background: #2e1e13; color: rgba(232,131,106,0.2); }
+.fb2 { background: #162028; color: rgba(150,200,240,0.15); }
+.fb3 { background: #1e2812; color: rgba(130,210,90,0.15); }
+.fb4 { background: #281e10; color: rgba(240,200,100,0.15); }
+.fb5 { background: #24101a; color: rgba(220,130,180,0.12); }
+.feat-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(10,5,2,0.85), transparent);
+  transform: translateY(0.5rem);
+  opacity: 0;
+  transition: opacity 0.35s, transform 0.35s;
+}
+.feat-card:hover .feat-info { opacity: 1; transform: translateY(0); }
+.feat-cat {
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  margin-bottom: 0.3rem;
+}
+.feat-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--cream);
+}
+.feat-corner {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  width: 28px; height: 28px;
+  border-top: 1px solid rgba(245,242,235,0.3);
+  border-right: 1px solid rgba(245,242,235,0.3);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feat-card:hover .feat-corner { opacity: 1; }
+
+/* ─── PROCESS ─── */
+#process { background: var(--white); padding: 7rem 3.5rem; }
+.process-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+.proc-col {
+  padding: 3rem 2.5rem 3rem 0;
+  border-right: 1px solid var(--rule);
+}
+.proc-col:last-child { border-right: none; padding-right: 0; }
+.proc-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4rem;
+  font-weight: 300;
+  color: var(--cream2);
+  line-height: 1;
+  margin-bottom: 1.5rem;
+}
+.proc-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+.proc-body {
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: var(--brown-mid);
+}
+.proc-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  margin-top: 2rem;
+}
+
+/* ─── TESTIMONIALS ─── */
+#testimonials { background: var(--cream); padding: 7rem 3.5rem; }
+.testi-layout {
+  display: grid; grid-template-columns: 1fr 2fr; gap: 5rem; align-items: start;
+}
+.testi-left h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 4vw, 3.8rem);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.testi-left h2 em { font-style: italic; color: var(--terracotta); }
+.testi-left p { font-size: 0.75rem; line-height: 1.8; color: var(--brown-mid); margin-top: 1.5rem; }
+.testi-list { display: flex; flex-direction: column; gap: 0; }
+.testi-item {
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.testi-item:first-child { border-top: 1px solid var(--rule); }
+.testi-quote {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--brown);
+  margin-bottom: 1.25rem;
+}
+.testi-author {
+  display: flex; align-items: center; gap: 1rem;
+}
+.ta-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.td1 { background: rgba(184,92,56,0.12); color: var(--terracotta); }
+.td2 { background: rgba(74,55,40,0.1); color: var(--brown-mid); }
+.td3 { background: rgba(184,92,56,0.07); color: var(--brown-lt); }
+.ta-name { font-size: 0.78rem; font-weight: 500; color: var(--ink); }
+.ta-role { font-size: 0.65rem; color: var(--brown-lt); letter-spacing: 0.05em; }
+
+/* ─── CONTACT ─── */
+#contact {
+  background: var(--terracotta);
+  padding: 8rem 3.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+.contact-left {}
+.contact-overline {
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(250,248,244,0.6);
+  margin-bottom: 1.75rem;
+}
+.contact-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 5vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1.0;
+  color: var(--white);
+  margin-bottom: 2rem;
+}
+.contact-sub {
+  font-size: 0.8rem;
+  line-height: 1.9;
+  color: rgba(250,248,244,0.7);
+  max-width: 360px;
+}
+.contact-right {}
+.contact-form { display: flex; flex-direction: column; gap: 0; }
+.form-field {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  border-bottom: 1px solid rgba(250,248,244,0.25);
+  padding: 1.25rem 0;
+}
+.form-field:first-child { border-top: 1px solid rgba(250,248,244,0.25); }
+.form-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(250,248,244,0.5);
+}
+.form-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: var(--white);
+  caret-color: var(--white);
+  width: 100%;
+}
+.form-input::placeholder { color: rgba(250,248,244,0.3); }
+.form-submit {
+  margin-top: 2.5rem;
+  display: inline-flex; align-items: center; gap: 1rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  padding: 1rem 2rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s;
+  align-self: flex-start;
+}
+.form-submit:hover { background: #0d0a08; }
+.form-submit::after {
+  content: '→';
+  font-size: 0.9rem;
+  transition: transform 0.25s;
+}
+.form-submit:hover::after { transform: translateX(4px); }
+
+/* ─── FOOTER ─── */
+footer {
+  background: var(--ink);
+  padding: 2.5rem 3.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+}
+.footer-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-decoration: none;
+}
+.footer-logo em { font-style: italic; color: var(--terracotta); }
+.footer-copy {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--brown-lt);
+  text-align: center;
+}
+.footer-social {
+  display: flex; gap: 1.75rem; justify-content: flex-end;
+}
+.footer-social a {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brown-lt);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-social a:hover { color: var(--terracotta); }
+
+/* ─── REVEAL ─── */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 860px) {
+  nav { padding: 1.5rem; grid-template-columns: 1fr auto; }
+  .nav-left, .nav-right { display: none; }
+  .nav-logo { text-align: left; }
+  .section-wrap, #about, #contact, #featured, #process, #testimonials { padding: 4rem 1.5rem; }
+  #hero { padding: 0 1.5rem 2rem; }
+  .hero-bottom { grid-template-columns: 1fr; gap: 1rem; }
+  .hero-bottom-item { border-right: none; border-bottom: 1px solid var(--rule); padding: 1rem 0; }
+  .services-layout, .about-grid, .testi-layout, #contact { grid-template-columns: 1fr; gap: 3rem; }
+  .featured-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .feat-card:nth-child(n) { grid-column: span 1; grid-row: auto; }
+  .process-grid { grid-template-columns: 1fr 1fr; }
+  .projects-list .proj-item { grid-template-columns: 2rem 1fr; }
+  .proj-tags, .proj-year { display: none; }
+  footer { grid-template-columns: 1fr; gap: 1rem; }
+  .footer-copy, .footer-social { text-align: left; justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-text">
+    <span>A</span><span>T</span><span>E</span><span>L</span><span>I</span><span>E</span><span>R</span>
+  </div>
+</div>
+
+<!-- CURSOR -->
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<!-- PROJECT PREVIEW -->
+<div class="proj-preview" id="proj-preview">
+  <div class="preview-inner pi-1" id="preview-inner">FORMA</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="#work">Work</a>
+    <a href="#services">Services</a>
+    <a href="#about">Studio</a>
+  </div>
+  <a class="nav-logo" href="#">Atelier <em>Forma</em></a>
+  <div class="nav-right">
+    <a href="#process">Process</a>
+    <a href="#contact" class="nav-contact">Inquire</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-text">Forma</div>
+  <div class="hero-center">
+    <div class="hero-rule"></div>
+    <p class="hero-eyebrow">Design & Architecture Studio · Warsaw — since 2017</p>
+    <h1 class="hero-headline">
+      Where form<br>
+      finds its <em>purpose</em>
+    </h1>
+    <p class="hero-sub">We design spaces, identities, and digital experiences that endure — guided by a belief that beauty and function are never in opposition.</p>
+    <a href="#work" class="hero-cta">Explore our work</a>
+  </div>
+  <div class="hero-bottom">
+    <div class="hero-bottom-item">
+      <span class="hb-label">Discipline</span>
+      <span class="hb-value">Design & Build</span>
+    </div>
+    <div class="hero-bottom-item">
+      <span class="hb-label">Projects completed</span>
+      <span class="hb-value">120+</span>
+    </div>
+    <div class="hero-bottom-item">
+      <span class="hb-label">Currently accepting</span>
+      <span class="hb-value">Q3 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="reveal">
+  <div class="section-wrap">
+    <div class="section-meta">
+      <span class="meta-num">01</span>
+      <span class="meta-title">Disciplines</span>
+    </div>
+    <div class="services-layout">
+      <div class="services-intro">
+        <h2>What we <em>practise</em></h2>
+        <p>Our studio operates across three disciplines — each informing the others. The result is work that is simultaneously considered, coherent, and complete.</p>
+        <a href="#contact" class="btn-terra">Start a conversation</a>
+      </div>
+      <div class="services-list">
+        <div class="service-row">
+          <span class="srv-idx">01</span>
+          <div class="srv-body">
+            <div class="srv-name">Spatial Design</div>
+            <div class="srv-desc">Interior architecture, residential and commercial spaces, material specification and art direction for built environments.</div>
+          </div>
+          <span class="srv-arrow">→</span>
+        </div>
+        <div class="service-row">
+          <span class="srv-idx">02</span>
+          <div class="srv-body">
+            <div class="srv-name">Brand Identity</div>
+            <div class="srv-desc">Visual systems for discerning clients — logomarks, typography, colour, and comprehensive brand guidelines built to last decades.</div>
+          </div>
+          <span class="srv-arrow">→</span>
+        </div>
+        <div class="service-row">
+          <span class="srv-idx">03</span>
+          <div class="srv-body">
+            <div class="srv-name">Digital Presence</div>
+            <div class="srv-desc">Websites, editorial platforms, and digital experiences that translate physical sophistication into the screen environment.</div>
+          </div>
+          <span class="srv-arrow">→</span>
+        </div>
+        <div class="service-row">
+          <span class="srv-idx">04</span>
+          <div class="srv-body">
+            <div class="srv-name">Creative Direction</div>
+            <div class="srv-desc">Campaign art direction, photography curation, and the strategic vision to unify every touchpoint under a single clear idea.</div>
+          </div>
+          <span class="srv-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK LIST -->
+<section id="work" class="reveal">
+  <div class="section-wrap">
+    <div class="section-meta">
+      <span class="meta-num">02</span>
+      <span class="meta-title">Selected Projects</span>
+    </div>
+    <div class="work-intro">
+      <h2>Work that<br><em>endures</em></h2>
+      <p>Each project is a long-term relationship — begun with deep listening and completed with uncompromising care.</p>
+    </div>
+    <div class="projects-list">
+      <div class="proj-item" data-bg="pi-1" data-label="MAISON">
+        <span class="proj-num">01</span>
+        <div class="proj-info">
+          <div class="proj-name">Maison Brun — Boutique Hotel</div>
+          <div class="proj-sub">Kraków, Poland</div>
+        </div>
+        <div class="proj-tags">
+          <span class="proj-tag">Spatial</span>
+          <span class="proj-tag">Identity</span>
+        </div>
+        <span class="proj-year">2024</span>
+      </div>
+      <div class="proj-item" data-bg="pi-2" data-label="AZURE">
+        <span class="proj-num">02</span>
+        <div class="proj-info">
+          <div class="proj-name">Azure Capital — Brand System</div>
+          <div class="proj-sub">Warsaw, Poland</div>
+        </div>
+        <div class="proj-tags">
+          <span class="proj-tag">Identity</span>
+          <span class="proj-tag">Digital</span>
+        </div>
+        <span class="proj-year">2024</span>
+      </div>
+      <div class="proj-item" data-bg="pi-3" data-label="VILLA">
+        <span class="proj-num">03</span>
+        <div class="proj-info">
+          <div class="proj-name">Villa Solana — Private Residence</div>
+          <div class="proj-sub">Gdańsk, Poland</div>
+        </div>
+        <div class="proj-tags">
+          <span class="proj-tag">Spatial</span>
+        </div>
+        <span class="proj-year">2023</span>
+      </div>
+      <div class="proj-item" data-bg="pi-4" data-label="GROVE">
+        <span class="proj-num">04</span>
+        <div class="proj-info">
+          <div class="proj-name">Grove Spirits — Packaging & Identity</div>
+          <div class="proj-sub">Wrocław, Poland</div>
+        </div>
+        <div class="proj-tags">
+          <span class="proj-tag">Identity</span>
+          <span class="proj-tag">Direction</span>
+        </div>
+        <span class="proj-year">2023</span>
+      </div>
+      <div class="proj-item" data-bg="pi-5" data-label="FORMA">
+        <span class="proj-num">05</span>
+        <div class="proj-info">
+          <div class="proj-name">Forma Gallery — Cultural Space</div>
+          <div class="proj-sub">Poznań, Poland</div>
+        </div>
+        <div class="proj-tags">
+          <span class="proj-tag">Spatial</span>
+          <span class="proj-tag">Identity</span>
+          <span class="proj-tag">Digital</span>
+        </div>
+        <span class="proj-year">2022</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Spatial Design <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Brand Identity <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Digital Presence <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Creative Direction <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Interior Architecture <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Art Direction <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Spatial Design <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Brand Identity <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Digital Presence <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Creative Direction <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Interior Architecture <span class="marquee-dot">·</span></span>
+    <span class="marquee-item">Art Direction <span class="marquee-dot">·</span></span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="reveal">
+  <div class="about-grid">
+    <div class="about-left">
+      <p class="about-overline">03 — About the studio</p>
+      <h2 class="about-headline">A small studio.<br><em>Uncommonly</em><br>intentional.</h2>
+      <p class="about-body">Atelier Forma is a Warsaw-based practice of eight designers, architects, and strategists. We take on a deliberate number of projects each year — enough to give each one the attention it deserves, no more. Our clients find us through word of mouth, and most stay for years.</p>
+      <p class="about-body">We believe the most enduring work comes from patience: listening before proposing, questioning before designing, and refining until there is nothing left to remove.</p>
+      <div class="team-row">
+        <div class="team-face tf1">AK</div>
+        <div class="team-face tf2">MB</div>
+        <div class="team-face tf3">PW</div>
+        <div class="team-more">+5</div>
+      </div>
+    </div>
+    <div class="about-right">
+      <div class="about-metrics">
+        <div class="metric-cell">
+          <div class="metric-num">120<sup>+</sup></div>
+          <div class="metric-lbl">Projects delivered</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-num">8</div>
+          <div class="metric-lbl">Years in practice</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-num">3</div>
+          <div class="metric-lbl">Disciplines</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-num">40<sup>+</sup></div>
+          <div class="metric-lbl">Long-term clients</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED GRID -->
+<section id="featured" class="reveal">
+  <div class="section-wrap" style="padding-left:3.5rem;padding-right:3.5rem;">
+    <div class="section-meta" style="margin-bottom:2.5rem;">
+      <span class="meta-num">04</span>
+      <span class="meta-title">Portfolio</span>
+    </div>
+    <div class="featured-header">
+      <h2>Work in <em>detail</em></h2>
+      <a href="#" class="all-link">View all projects</a>
+    </div>
+    <div class="featured-grid">
+      <div class="feat-card">
+        <div class="feat-bg fb1">Maison</div>
+        <div class="feat-corner"></div>
+        <div class="feat-info">
+          <div class="feat-cat">Spatial · Identity</div>
+          <div class="feat-name">Maison Brun — Boutique Hotel</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-bg fb2">Azure</div>
+        <div class="feat-corner"></div>
+        <div class="feat-info">
+          <div class="feat-cat">Brand System</div>
+          <div class="feat-name">Azure Capital — Identity</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-bg fb3">Villa</div>
+        <div class="feat-corner"></div>
+        <div class="feat-info">
+          <div class="feat-cat">Spatial Design</div>
+          <div class="feat-name">Villa Solana Residence</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-bg fb4">Grove</div>
+        <div class="feat-corner"></div>
+        <div class="feat-info">
+          <div class="feat-cat">Packaging · Identity</div>
+          <div class="feat-name">Grove Spirits</div>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-bg fb5">Forma</div>
+        <div class="feat-corner"></div>
+        <div class="feat-info">
+          <div class="feat-cat">Cultural Space</div>
+          <div class="feat-name">Forma Gallery</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="reveal">
+  <div class="section-wrap">
+    <div class="section-meta">
+      <span class="meta-num">05</span>
+      <span class="meta-title">How we work</span>
+    </div>
+    <div class="process-grid">
+      <div class="proc-col">
+        <div class="proc-num">I</div>
+        <div class="proc-title">Listen</div>
+        <p class="proc-body">Every engagement begins with sustained, generous listening. We seek to understand not just what you want, but why — and what you haven't yet thought to ask for.</p>
+        <div class="proc-dot"></div>
+      </div>
+      <div class="proc-col">
+        <div class="proc-num">II</div>
+        <div class="proc-title">Define</div>
+        <p class="proc-body">Clarity is the first deliverable. We codify ambitions into a clear creative brief that aligns all stakeholders and becomes the north star for every decision ahead.</p>
+        <div class="proc-dot"></div>
+      </div>
+      <div class="proc-col">
+        <div class="proc-num">III</div>
+        <div class="proc-title">Craft</div>
+        <p class="proc-body">We work slowly and deliberately, in close collaboration. Concepts are developed, challenged, and refined through rigorous critique and honest dialogue.</p>
+        <div class="proc-dot"></div>
+      </div>
+      <div class="proc-col">
+        <div class="proc-num">IV</div>
+        <div class="proc-title">Endure</div>
+        <p class="proc-body">Our work does not stop at handover. We remain close partners — ensuring that what we build together ages with grace and continues to serve its purpose.</p>
+        <div class="proc-dot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="reveal">
+  <div class="section-wrap">
+    <div class="section-meta">
+      <span class="meta-num">06</span>
+      <span class="meta-title">Client voices</span>
+    </div>
+    <div class="testi-layout">
+      <div class="testi-left">
+        <h2>Heard from those<br>we've <em>worked with</em></h2>
+        <p>Trust is the foundation of every lasting relationship. We are proud of the clients who put theirs in us.</p>
+      </div>
+      <div class="testi-list">
+        <div class="testi-item">
+          <p class="testi-quote">"Atelier Forma brought a quality of attention I had not encountered before. Every detail was considered, and the final space feels entirely inevitable — as though it could not have been any other way."</p>
+          <div class="testi-author">
+            <div class="ta-dot td1">HB</div>
+            <div>
+              <div class="ta-name">Helena Brandt</div>
+              <div class="ta-role">Owner, Maison Brun</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-item">
+          <p class="testi-quote">"We came with a vague sense of who we wanted to be. Forma gave us language, form, and confidence. The brand they built has outlasted three funding rounds and shows no signs of ageing."</p>
+          <div class="testi-author">
+            <div class="ta-dot td2">RM</div>
+            <div>
+              <div class="ta-name">Rafał Makowski</div>
+              <div class="ta-role">Managing Partner, Azure Capital</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-item">
+          <p class="testi-quote">"The team's restraint is their greatest strength. Where other studios would have over-designed, they removed. The gallery speaks for itself now — which is exactly as it should be."</p>
+          <div class="testi-author">
+            <div class="ta-dot td3">ZK</div>
+            <div>
+              <div class="ta-name">Zofia Krawczyk</div>
+              <div class="ta-role">Director, Forma Gallery</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="reveal">
+  <div class="contact-left">
+    <p class="contact-overline">07 — Begin a conversation</p>
+    <h2 class="contact-headline">Let's make<br>something<br>that lasts.</h2>
+    <p class="contact-sub">We take on a limited number of new projects each year. If what we do resonates with what you need, we would be glad to hear from you.</p>
+  </div>
+  <div class="contact-right">
+    <form class="contact-form" onsubmit="return false;">
+      <div class="form-field">
+        <label class="form-label">Your name</label>
+        <input class="form-input" type="text" placeholder="Anna Kowalska" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Email address</label>
+        <input class="form-input" type="email" placeholder="anna@studio.co" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Project brief</label>
+        <input class="form-input" type="text" placeholder="Tell us about your project..." />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Approximate budget</label>
+        <input class="form-input" type="text" placeholder="e.g. €20,000 – €50,000" />
+      </div>
+      <button class="form-submit">Send enquiry</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#">Atelier <em>Forma</em></a>
+  <span class="footer-copy">© 2026 Atelier Forma Sp. z o.o. · Warsaw, Poland · All rights reserved</span>
+  <div class="footer-social">
+    <a href="#">Instagram</a>
+    <a href="#">LinkedIn</a>
+    <a href="#">Behance</a>
+    <a href="#">Dezeen</a>
+  </div>
+</footer>
+
+<script>
+// Loader
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('loader').classList.add('done'), 1200);
+});
+
+// Cursor
+const cur = document.getElementById('cur');
+const ring = document.getElementById('cur-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function loop() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cur.style.left  = mx + 'px'; cur.style.top = my + 'px';
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a, button, .proj-item, .feat-card, .service-row').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.classList.add('big'); ring.classList.add('big'); });
+  el.addEventListener('mouseleave', () => { cur.classList.remove('big'); ring.classList.remove('big'); });
+});
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Project hover preview
+const preview = document.getElementById('proj-preview');
+const previewInner = document.getElementById('preview-inner');
+const bgMap = { 'pi-1':'#2e1e13','pi-2':'#162028','pi-3':'#1e2812','pi-4':'#281e10','pi-5':'#24101a' };
+document.querySelectorAll('.proj-item').forEach(item => {
+  item.addEventListener('mouseenter', () => { preview.classList.add('show'); });
+  item.addEventListener('mouseleave', () => { preview.classList.remove('show'); });
+  item.addEventListener('mousemove', e => {
+    preview.style.left = (e.clientX + 24) + 'px';
+    preview.style.top  = (e.clientY - 80) + 'px';
+    const bg = item.dataset.bg || 'pi-1';
+    previewInner.className = 'preview-inner ' + bg;
+    previewInner.textContent = item.dataset.label || '';
+  });
+});
+
+// Nav shrink on scroll
+const nav = document.querySelector('nav');
+window.addEventListener('scroll', () => {
+  nav.style.padding = window.scrollY > 60 ? '1rem 3.5rem' : '2rem 3.5rem';
+  nav.style.background = window.scrollY > 60 ? 'rgba(244,239,230,0.92)' : 'transparent';
+  nav.style.backdropFilter = window.scrollY > 60 ? 'blur(16px)' : 'none';
+  nav.style.borderBottom = window.scrollY > 60 ? '1px solid rgba(74,55,40,0.1)' : 'none';
+  nav.style.transition = 'all 0.35s ease';
+});
+</script>
+</body>
+</html>
